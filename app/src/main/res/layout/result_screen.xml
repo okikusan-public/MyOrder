@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginLeft="2dp">
 
     <TextView
         android:id="@+id/TopText"
@@ -21,4 +22,32 @@
         android:textColor="#FF0000"
         android:textSize="50sp"
         android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/TopText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:text="おつり金額は"
+        android:textSize="30sp"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/OturiText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textColor="#FF0000"
+        android:textSize="30sp"
+        android:typeface="sans" />
+
+    <Button
+        android:id="@+id/Save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="保存"
+        android:textSize="24dp"
+        />
+
 </LinearLayout>
