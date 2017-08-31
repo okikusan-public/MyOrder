@@ -1,5 +1,9 @@
 package com.example.hiroyukikikuchi.test;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -21,6 +25,11 @@ import java.text.NumberFormat;
 public class Result extends AppCompatActivity implements OnClickListener{
 
     private PopupWindow popupWin_;
+    private SQLiteDatabase db_;
+
+    private final static String DB_NAME      = "test.db";        // DB名
+    private final static String DB_TABLE     = "test";           // テーブル名
+    private final static int    DB_VERSION  = 1;                 // バージョン
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +61,9 @@ public class Result extends AppCompatActivity implements OnClickListener{
         Button save_button = (Button) findViewById(R.id.Save);
         save_button.setOnClickListener(this);
 
+        // データベースオブジェクトの取得
+          DBHelper dbHelper = new DBHelper(this);
+          db_ = dbHelper.getWritableDatabase();
     }
 
     @Override
@@ -67,13 +79,22 @@ public class Result extends AppCompatActivity implements OnClickListener{
             popupWin_ = new PopupWindow(this);
 
             View popLayout = getLayoutInflater().inflate(R.layout.save_confirm, null);
+
             popLayout.findViewById(R.id.close_save_button).setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
+
                     if( popupWin_.isShowing() ) {
                         popupWin_.dismiss();
                     }
+
+                    // タイトル情報を取得
+                    EditText Title = (EditText) findViewById(R.id.save_text);
+
+
+
+
                 }
             });
 
@@ -98,4 +119,55 @@ public class Result extends AppCompatActivity implements OnClickListener{
 
         return;
     }
+
+    // データベースへの書き込み
+    private void writeDB( String info ){
+        ContentValues values = new ContentValues();
+        values.put("id", "0");
+        values.put("info", info);
+
+    }
+
+    // データベースヘルパーの定義
+    private static class DBHelper extends SQLiteOpenHelper{
+
+        // DBヘルパーのコンストラクタ
+        public DBHelper(Context context){
+            super( context, DB_NAME, null, DB_VERSION );
+        }
+
+        // DBの作成
+        @Override
+        public void onCreate( SQLiteDatabase db ){
+            db.execSQL("create table if not exists" + DB_TABLE + "(id text primary key, title text, kingaku text, oturi text )" );
+        }
+
+        // DBのアップグレード
+        @Override
+        public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
+            db.execSQL("drop table if exists" + DB_TABLE);
+            onCreate(db);
+        }
+    }
+    /*
+    private class SaveConfirm extends View implements OnClickListener {
+
+        public SaveConfirm(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void onClick(View v) {
+
+            if (popupWin_.isShowing()) {
+                popupWin_.dismiss();
+            }
+
+            // タイトル情報を取得
+            EditText Title = (EditText) findViewById(R.id.save_text);
+
+
+        }
+    }
+    */
 }
