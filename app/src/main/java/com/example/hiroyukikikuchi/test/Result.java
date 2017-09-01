@@ -139,13 +139,13 @@ public class Result extends AppCompatActivity implements OnClickListener{
         // DBの作成
         @Override
         public void onCreate( SQLiteDatabase db ){
-            db.execSQL("create table if not exists" + DB_TABLE + "(id text primary key, title text, kingaku text, oturi text )" );
+            db.execSQL("create table if not exists " + DB_TABLE + "(id text primary key, title text, kingaku text, oturi text )" );
         }
 
         // DBのアップグレード
         @Override
         public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
-            db.execSQL("drop table if exists" + DB_TABLE);
+            db.execSQL("drop table if exists " + DB_TABLE);
             onCreate(db);
         }
     }
