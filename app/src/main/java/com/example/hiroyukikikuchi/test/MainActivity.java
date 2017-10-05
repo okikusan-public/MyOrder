@@ -1,22 +1,28 @@
 package com.example.hiroyukikikuchi.test;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.view.View;
 import android.widget.EditText;
 import android.view.View.OnClickListener;
 import android.content.Intent;
-import 	android.widget.PopupWindow;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
-    private PopupWindow popupWin_;
+    public final static String kGoukeiKingaku = "GoukeiKingaku";
+    public final static String kOturi          = "Oturi";
+    public final static String kNinzu          = "Ninzu";
+    public final static String kKanpaKingaku  = "KanpaKingaku";
+    public final static String kOkaikekingaku = "Okaikekingaku";
+
+    private final String kGoukeiError = "合計金額に数字を入れてください";
+    private final String kNinzuError  = "人数に数字を入れてください";
+    private final String kKapnaError  = "カンパ金額に数字を入れてください";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,17 +51,17 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
             // 合計金額の入力が0の場合
             if( GoukeiKingaku.getText().length() == 0 ){
-                throw new GoukeiKingakuError("合計金額に数字を入れてください");
+                throw new GoukeiKingakuError(kGoukeiError);
             }
 
             // カンパ金額の入力が0の場合
             else if( KanpaKingaku.getText().length() == 0 ){
-                throw new KanpaKingakuError("カンパ金額に数字を入れてください");
+                throw new KanpaKingakuError(kKapnaError);
             }
 
             // 人数の入力が0の場合
             else if(Ninzu.getText().length() == 0){
-                throw new NinzuError("人数に数字を入れてください");
+                throw new NinzuError(kNinzuError);
             }
 
             String GoukeiKingakuString = GoukeiKingaku.getText().toString();
@@ -94,48 +100,49 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             int iOturi = okaikei.getiOturi();
 
             Intent intent = new Intent(getApplication(), Result.class);
-            intent.putExtra("Oturi", iOturi);
-            intent.putExtra("OkaikeiResult", iOkaikekingaku);
+            intent.putExtra(kGoukeiKingaku, iGoukeiKingaku);
+            intent.putExtra(kOturi, iOturi);
+            intent.putExtra(kNinzu, iNinzu);
+            intent.putExtra(kKanpaKingaku, iKanpaKingaku);
+            intent.putExtra(kOkaikekingaku, iOkaikekingaku);
             startActivity(intent);
         }
         catch ( Exception e ){
-            // PopupのViewのインスタンス生成
 
-            popupWin_ = new PopupWindow(this);
-
-            View popLayout = getLayoutInflater().inflate(R.layout.warning_pop, null);
-            popLayout.findViewById(R.id.close_button).setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    if( popupWin_.isShowing() ) {
-                        popupWin_.dismiss();
-                    }
-                }
-            });
-
-            popupWin_.setContentView(popLayout);
-
-            // 文字列設定
-            TextView ErrorText = (TextView)popLayout.findViewById(R.id.WarningText);
-            ErrorText.setText(e.getMessage());
-
-            // 背景設定
-            popupWin_.setBackgroundDrawable(getResources().getDrawable(R.drawable.popup_background));
-
-            // タッチ時に他のviewにキャッチされないように設定
-            popupWin_.setOutsideTouchable(true);
-            popupWin_.setFocusable(true);
-
-            // 表示サイズの設定 今回は幅300dp
-            float width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 300, getResources().getDisplayMetrics());
-            popupWin_.setWidth((int)width);
-            popupWin_.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
-
-            // 画面中央に表示
-            popupWin_.showAtLocation(findViewById(R.id.button100), Gravity.CENTER, 0, 0);
+            ErrorMessage.show(this, e.getMessage());
 
         }
+    }
 
+    // メッセージダイアログの定義
+    public static class ErrorMessage extends DialogFragment {
+
+        private static final String kTitle  = "title";
+        private static final String kError  = "Error";
+        private static final String kText   = "text";
+        private static final String kTag     = "ErrorMessage";
+
+        // Diagログの表示
+        public static void show( Activity activity, String error ){
+            ErrorMessage f = new ErrorMessage();
+            Bundle args = new Bundle();
+            args.putString(kTitle, kError);
+            args.putString(kText, error);
+            f.setArguments(args);
+            f.show(activity.getFragmentManager(), kTag);
+        }
+
+        // ダイアログの生成
+        @Override
+        public Dialog onCreateDialog(Bundle bundle ){
+
+            AlertDialog.Builder ad = new AlertDialog.Builder(getActivity());
+            ad.setTitle(getArguments().getString(kTitle));
+            ad.setMessage(getArguments().getString(kText));
+            ad.setPositiveButton("OK", null);
+
+            return ad.create();
+
+        }
     }
 }

@@ -1,22 +1,23 @@
 package com.example.hiroyukikikuchi.test;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.ContentValues;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.WindowManager;
+import android.text.InputType;
 import android.widget.Button;
 import android.view.View;
 import android.widget.EditText;
 import android.view.View.OnClickListener;
 import android.content.Intent;
-import android.widget.PopupWindow;
 import android.widget.TextView;
-import java.text.NumberFormat;
+import java.util.*;
+import java.text.*;
 
 /**
  * Created by HiroyukiKikuchi on 2017/07/08.
@@ -24,12 +25,13 @@ import java.text.NumberFormat;
 
 public class Result extends AppCompatActivity implements OnClickListener{
 
-    private PopupWindow popupWin_;
-    private SQLiteDatabase db_;
+    private static SQLiteDatabase DB_;
 
-    private final static String DB_NAME      = "test.db";        // DB名
-    private final static String DB_TABLE     = "test";           // テーブル名
-    private final static int    DB_VERSION  = 1;                 // バージョン
+    private static int iOkakeiKingaku_;
+    private static int iOturi_;
+    private static int iGoukeiKingaku_;
+    private static int iKanpa_;
+    private static int iNinzu_;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +41,11 @@ public class Result extends AppCompatActivity implements OnClickListener{
 
         // MainActivity からのデータを受け取る
         Intent intent = getIntent();
-        int iOkakeiKingaku = intent.getIntExtra("OkaikeiResult", 0);
-        int iOturi = intent.getIntExtra("Oturi", 0);
+        iOkakeiKingaku_ = intent.getIntExtra(MainActivity.kOkaikekingaku, 0);
+        iGoukeiKingaku_ = intent.getIntExtra(MainActivity.kGoukeiKingaku, 0);
+        iOturi_ = intent.getIntExtra(MainActivity.kOturi, 0);
+        iKanpa_ = intent.getIntExtra(MainActivity.kKanpaKingaku, 0);
+        iNinzu_ = intent.getIntExtra(MainActivity.kNinzu, 0);
 
         // 通貨数値フォーマット（デフォルト）
         NumberFormat NF = NumberFormat.getCurrencyInstance();
@@ -49,21 +54,21 @@ public class Result extends AppCompatActivity implements OnClickListener{
         TextView ResultView = (TextView) findViewById(R.id.ResultText);
 
         // デフォルトロケールで支払い金額出力
-        ResultView.setText(NF.format(iOkakeiKingaku));
+        ResultView.setText(NF.format(iOkakeiKingaku_));
 
         // おつり金額を出力する
         TextView OturiView = (TextView) findViewById(R.id.OturiText);
 
         // デフォルトロケールでおつり金額出力
-        OturiView.setText(NF.format(iOturi));
+        OturiView.setText(NF.format(iOturi_));
 
         // 保存ボタンのリスナー登録
         Button save_button = (Button) findViewById(R.id.Save);
         save_button.setOnClickListener(this);
 
         // データベースオブジェクトの取得
-          DBHelper dbHelper = new DBHelper(this);
-          db_ = dbHelper.getWritableDatabase();
+        DBHelper dbHelper = new DBHelper(this);
+        DB_ = dbHelper.getWritableDatabase();
     }
 
     @Override
@@ -75,45 +80,7 @@ public class Result extends AppCompatActivity implements OnClickListener{
                 break;
             }
 
-            // popup windowを生成する
-            popupWin_ = new PopupWindow(this);
-
-            View popLayout = getLayoutInflater().inflate(R.layout.save_confirm, null);
-
-            popLayout.findViewById(R.id.close_save_button).setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-
-                    if( popupWin_.isShowing() ) {
-                        popupWin_.dismiss();
-                    }
-
-                    // タイトル情報を取得
-                    EditText Title = (EditText) findViewById(R.id.save_text);
-
-
-
-
-                }
-            });
-
-            popupWin_.setContentView(popLayout);
-
-            // 背景設定
-            popupWin_.setBackgroundDrawable(getResources().getDrawable(R.drawable.popup_background));
-
-            // タッチ時に他のviewにキャッチされないように設定
-            popupWin_.setOutsideTouchable(true);
-            popupWin_.setFocusable(true);
-
-            // 表示サイズの設定 今回は幅300dp
-            float width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400, getResources().getDisplayMetrics());
-            popupWin_.setWidth((int)width);
-            popupWin_.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
-
-            // 画面中央に表示
-            popupWin_.showAtLocation(findViewById(R.id.ResultText), Gravity.CENTER, 0, 0);
+            SaveDialog.show(this);
 
         }while (false);
 
@@ -121,53 +88,121 @@ public class Result extends AppCompatActivity implements OnClickListener{
     }
 
     // データベースへの書き込み
-    private void writeDB( String info ){
+    private static void writeDB( String title,  String Date, String kingaku, String oturi ){
+
         ContentValues values = new ContentValues();
-        values.put("id", "0");
-        values.put("info", info);
-
+        values.put(Constants.DatabaseItem.kTitle, title);
+        values.put(Constants.DatabaseItem.kTime, Date);
+        values.put(Constants.DatabaseItem.kGoukei, String.valueOf(iGoukeiKingaku_));
+        values.put(Constants.DatabaseItem.kNinzu, String.valueOf(iNinzu_));
+        values.put(Constants.DatabaseItem.kKanpa, String.valueOf(iKanpa_));
+        values.put(Constants.DatabaseItem.kOturi, oturi);
+        values.put(Constants.DatabaseItem.kShiharai, kingaku);
+        Result.DB_.insert(DBHelper.getDbTableName(), "", values);
     }
 
-    // データベースヘルパーの定義
-    private static class DBHelper extends SQLiteOpenHelper{
+    public static class SaveDialog extends DialogFragment{
+        private EditText editText;
+        private static final String kTitletag           = "title";
+        private static final String kTextTag            = "text";
+        private static final String kSaveDialogTag      = "SaveDialog";
+        private static final String kTitleText          = "お会計履歴保存";
+        private static final String kTextString         = "タイトルを入力してください";
+        private static final String kPositiveButton     = "Save";
+        private static final String kNegativeButton     = "Cancel";
+        private static final String kTimeFormat         = "yyyy/MM/dd/ HH:mm";
 
-        // DBヘルパーのコンストラクタ
-        public DBHelper(Context context){
-            super( context, DB_NAME, null, DB_VERSION );
+
+        // Dialogの確認
+        public static void show( Activity activity ){
+            SaveDialog f = new SaveDialog();
+            Bundle args = new Bundle();
+            args.putString(kTitletag, kTitleText);
+            args.putString(kTextTag, kTextString);
+            f.setArguments(args);
+
+            f.show(activity.getFragmentManager(), kSaveDialogTag);
         }
 
-        // DBの作成
+        // テキスト入力ダイアログの作成
         @Override
-        public void onCreate( SQLiteDatabase db ){
-            db.execSQL("create table if not exists " + DB_TABLE + "(id text primary key, title text, kingaku text, oturi text )" );
-        }
+        public Dialog onCreateDialog( Bundle bundle ){
 
-        // DBのアップグレード
-        @Override
-        public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
-            db.execSQL("drop table if exists " + DB_TABLE);
-            onCreate(db);
-        }
-    }
-    /*
-    private class SaveConfirm extends View implements OnClickListener {
+            // リスナーの作成
+            DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener(){
 
-        public SaveConfirm(Context context) {
-            super(context);
-        }
+                // ダイアログボタン押下時に呼ばれる
+                public void onClick( DialogInterface dialog, int which ){
 
-        @Override
-        public void onClick(View v) {
+                    if( DialogInterface.BUTTON_POSITIVE == which ) {
 
-            if (popupWin_.isShowing()) {
-                popupWin_.dismiss();
+                        // 入力したタイトルを取得
+                        String title = editText.getText().toString();
+
+                        // 現在日時の取得
+                        Date now = new Date(System.currentTimeMillis());
+                        DateFormat formatter = new SimpleDateFormat(kTimeFormat);
+                        String time = formatter.format(now);
+
+                        Result.writeDB(title, time, String.valueOf(Result.iOkakeiKingaku_), String.valueOf(Result.iOturi_));
+
+                        CompleteMessage.show(getActivity());
+                    }
+                }
+            };
+
+
+            // テキストボックス作成
+            editText = new EditText(getActivity());
+            editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+
+            // テキスト入力ダイアログの作成
+            AlertDialog.Builder ad = new AlertDialog.Builder(getActivity());
+            ad.setTitle(getArguments().getString(kTitletag));
+            ad.setMessage(getArguments().getString(kTextTag));
+            ad.setView(editText);
+            ad.setPositiveButton(kPositiveButton, listener);
+            ad.setNegativeButton(kNegativeButton, listener);
+
+            // フラグメントの状態復帰
+            if( bundle != null ){
+                editText.setText(bundle.getString("editText"));
             }
+            return ad.create();
+        }
+    }
 
-            // タイトル情報を取得
-            EditText Title = (EditText) findViewById(R.id.save_text);
+    // メッセージダイアログの定義
+    public static class CompleteMessage extends DialogFragment{
 
+        private static final String kTitletag           = "title";
+        private static final String kTextTag            = "text";
+        private static final String kCompleteDialogTag = "CompleteMessage";
+        private static final String kTitleText          = "Complete";
+        private static final String kTextString         = "登録完了しました";
+        private static final String kPositiveButton     = "OK";
+
+        // Diagログの表示
+        public static void show( Activity activity ){
+            CompleteMessage f = new CompleteMessage();
+            Bundle args = new Bundle();
+            args.putString(kTitletag, kTitleText);
+            args.putString(kTextTag, kTextString);
+            f.setArguments(args);
+            f.show(activity.getFragmentManager(), kCompleteDialogTag);
+        }
+
+        // ダイアログの生成
+        @Override
+        public Dialog onCreateDialog( Bundle bundle ){
+
+            AlertDialog.Builder ad = new AlertDialog.Builder(getActivity());
+            ad.setTitle(getArguments().getString(kTitletag));
+            ad.setMessage(getArguments().getString(kTextTag));
+            ad.setPositiveButton(kPositiveButton, null);
+
+            return ad.create();
 
         }
     }
-    */
 }

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <TextView
+        android:id="@+id/RirekiTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:text="タイトル名"
+        android:textSize="20sp"
+        android:typeface="sans"
+        />
+
+    <TextView
+        android:id="@+id/RirekiTitleStrings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:textColor="#FF0000"
+        android:textSize="30sp"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/RirekiDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:text="登録日時"
+        android:textSize="20sp"
+        android:typeface="sans"
+        />
+
+    <TextView
+        android:id="@+id/RirekiDateStrings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:textColor="#FF0000"
+        android:textSize="30sp"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/RirekiGoukei"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:text="お会計金額"
+        android:textSize="20sp"
+        android:typeface="sans"
+        />
+
+    <TextView
+        android:id="@+id/RirekiGoukeiStrings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:textColor="#FF0000"
+        android:textSize="30sp"
+        android:typeface="sans" />
+
+    <TextView
+        android:id="@+id/Ninzu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:text="参加人数"
+        android:textSize="20sp"
+        android:typeface="sans"
+        />
+
+    <TextView
+        android:id="@+id/NinzuStrings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:textColor="#FF0000"
+        android:textSize="30sp"
+        android:typeface="sans" />
+
+
+</LinearLayout>

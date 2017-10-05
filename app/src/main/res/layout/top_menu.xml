@@ -28,7 +28,7 @@
             android:textSize="26dp"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <Button android:id="@+id/ResultLabel"
+        <Button android:id="@+id/RirekiButton"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:text="過去のお会計履歴"
